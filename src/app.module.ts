@@ -47,8 +47,8 @@ import { MailModule } from './modules/mail/mail.module';
     }),
     CacheModule.register({
       isGlobal: true,
-      ttl: 5, // seconds
-      max: 100, // maximum number of items in cache
+      ttl: 5,
+      max: 100,
     }),
     AuthModule,
     UsersModule,

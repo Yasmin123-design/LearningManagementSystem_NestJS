@@ -62,14 +62,14 @@ export class PageOptionsDto {
   @IsInt()
   @Min(1)
   @IsOptional()
-  readonly page?: number = 1;
+  readonly page: number = 1;
 
   @TransformType(() => Number)
   @IsInt()
   @Min(1)
   @Max(50)
   @IsOptional()
-  readonly take?: number = 10;
+  readonly take: number = 10;
 
   get skip(): number {
     return (this.page - 1) * this.take;

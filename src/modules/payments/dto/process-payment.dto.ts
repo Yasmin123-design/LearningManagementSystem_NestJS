@@ -6,9 +6,4 @@ export class ProcessPaymentDto {
   @IsUUID()
   @IsNotEmpty()
   courseId: string;
-
-  @ApiProperty({ example: 'card_token_123' })
-  @IsString()
-  @IsNotEmpty()
-  paymentToken: string;
 }
