@@ -73,6 +73,23 @@ export class CoursesService {
     return course;
   }
 
+  async getContentHierarchy(id: string) {
+    const course = await this.courseRepository.findOne({
+      where: { id },
+      relations: ['modules', 'modules.lessons'],
+      order: {
+        modules: {
+          order: 'ASC',
+          lessons: {
+            order: 'ASC',
+          },
+        },
+      },
+    });
+    if (!course) throw new NotFoundException('Course not found');
+    return course.modules;
+  }
+
   async update(
     id: string,
     updateCourseDto: UpdateCourseDto,

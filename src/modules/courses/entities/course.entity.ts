@@ -6,10 +6,12 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Category } from '../../categories/entities/category.entity';
+import { Module as CourseModule } from '../../modules/entities/module.entity';
 
 @Entity('courses')
 export class Course {
@@ -50,6 +52,9 @@ export class Course {
   @ManyToOne(() => Category, (category) => category.courses)
   @JoinColumn({ name: 'categoryId' })
   category: Category;
+
+  @OneToMany(() => CourseModule, (module) => module.course)
+  modules: CourseModule[];
 
   @CreateDateColumn()
   createdAt: Date;

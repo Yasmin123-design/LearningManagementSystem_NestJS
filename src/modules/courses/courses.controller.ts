@@ -10,6 +10,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CoursesService } from './courses.service';
@@ -53,8 +54,15 @@ export class CoursesController {
   @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get course by ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.coursesService.findOne(id);
+  }
+
+  @Public()
+  @Get(':id/content')
+  @ApiOperation({ summary: 'Get course content (Modules and Lessons) hierarchy' })
+  getContent(@Param('id', ParseUUIDPipe) id: string) {
+    return this.coursesService.getContentHierarchy(id);
   }
 
   @Patch(':id')

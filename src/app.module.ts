@@ -14,6 +14,8 @@ import { EnrollmentsModule } from './modules/enrollments/enrollments.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { MailModule } from './modules/mail/mail.module';
+import { ModulesModule } from './modules/modules/modules.module';
+import { LessonsModule } from './modules/lessons/lessons.module';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { MailModule } from './modules/mail/mail.module';
     ReviewsModule,
     PaymentsModule,
     MailModule,
+    ModulesModule,
+    LessonsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
