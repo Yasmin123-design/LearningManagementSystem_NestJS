@@ -30,6 +30,15 @@ export class User {
   isVerified: boolean;
 
   @Column({ type: 'varchar', nullable: true })
+  name: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  bio: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  avatar: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
   refreshToken: string | null;
 
   @Column({ type: 'varchar', nullable: true, select: false })

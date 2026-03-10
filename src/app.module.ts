@@ -16,6 +16,10 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { MailModule } from './modules/mail/mail.module';
 import { ModulesModule } from './modules/modules/modules.module';
 import { LessonsModule } from './modules/lessons/lessons.module';
+import { QuizzesModule } from './modules/quizzes/quizzes.module';
+import { InstructorModule } from './modules/instructor/instructor.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
+import { CertificatesModule } from './modules/certificates/certificates.module';
 
 @Module({
   imports: [
@@ -62,6 +66,10 @@ import { LessonsModule } from './modules/lessons/lessons.module';
     MailModule,
     ModulesModule,
     LessonsModule,
+    QuizzesModule,
+    InstructorModule,
+    WishlistModule,
+    CertificatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

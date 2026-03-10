@@ -50,4 +50,14 @@ export class EnrollmentsController {
   ) {
     return this.enrollmentsService.updateProgress(userId, courseId, progress);
   }
+
+  @Post('lessons/:lessonId/complete')
+  @Roles(Role.STUDENT)
+  @ApiOperation({ summary: 'Mark a lesson as completed manually (for non-quiz lessons)' })
+  completeLesson(
+    @CurrentUser('userId') userId: string,
+    @Param('lessonId') lessonId: string,
+  ) {
+    return this.enrollmentsService.completeLesson(userId, lessonId);
+  }
 }

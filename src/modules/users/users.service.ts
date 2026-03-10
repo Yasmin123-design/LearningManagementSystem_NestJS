@@ -106,4 +106,21 @@ export class UsersService {
       resetPasswordExpires: null,
     });
   }
+
+  async updateProfile(
+    userId: string,
+    data: { name?: string; bio?: string; avatar?: string },
+  ): Promise<User> {
+    await this.userRepository.update(userId, data);
+    return this.findById(userId);
+  }
+
+  async getMe(userId: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'email', 'role', 'name', 'bio', 'avatar', 'isVerified', 'createdAt'],
+    });
+    if (!user) throw new Error('User not found');
+    return user;
+  }
 }

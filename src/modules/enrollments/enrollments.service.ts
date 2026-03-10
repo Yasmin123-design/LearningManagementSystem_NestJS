@@ -7,14 +7,20 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Enrollment } from './entities/enrollment.entity';
+import { StudentLesson } from './entities/student-lesson.entity';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { CoursesService } from '../courses/courses.service';
+import { Lesson } from '../lessons/entities/lesson.entity';
 
 @Injectable()
 export class EnrollmentsService {
   constructor(
     @InjectRepository(Enrollment)
     private readonly enrollmentRepository: Repository<Enrollment>,
+    @InjectRepository(StudentLesson)
+    private readonly studentLessonRepository: Repository<StudentLesson>,
+    @InjectRepository(Lesson)
+    private readonly lessonRepository: Repository<Lesson>,
     private readonly coursesService: CoursesService,
     private readonly dataSource: DataSource,
   ) {}
@@ -66,6 +72,73 @@ export class EnrollmentsService {
       where: { userId },
       relations: ['course', 'course.category', 'course.instructor'],
     });
+  }
+
+  async completeLesson(userId: string, lessonId: string): Promise<Enrollment> {
+    const lesson = await this.lessonRepository.findOne({
+      where: { id: lessonId },
+      relations: ['module'],
+    });
+
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    const courseId = lesson.module.courseId;
+    const enrollment = await this.enrollmentRepository.findOne({
+      where: { userId, courseId },
+    });
+
+    if (!enrollment) {
+      throw new NotFoundException('Student not enrolled in this course');
+    }
+
+    // Mark lesson as completed if not already
+    const existing = await this.studentLessonRepository.findOne({
+      where: { userId, lessonId },
+    });
+
+    if (!existing) {
+      await this.studentLessonRepository.save(
+        this.studentLessonRepository.create({ userId, lessonId }),
+      );
+    }
+
+    // Recalculate progress
+    return this.calculateAndUpdateProgress(userId, courseId);
+  }
+
+  async calculateAndUpdateProgress(userId: string, courseId: string): Promise<Enrollment> {
+    const enrollment = await this.enrollmentRepository.findOne({
+      where: { userId, courseId },
+    });
+
+    if (!enrollment) {
+      throw new NotFoundException('Enrollment not found');
+    }
+
+    // Get total lessons in course
+    const totalLessons = await this.lessonRepository
+      .createQueryBuilder('lesson')
+      .innerJoin('lesson.module', 'module')
+      .where('module.courseId = :courseId', { courseId })
+      .getCount();
+
+    if (totalLessons === 0) {
+      enrollment.progress = 100;
+    } else {
+      // Get completed lessons by student for this course
+      const completedLessons = await this.studentLessonRepository
+        .createQueryBuilder('sl')
+        .innerJoin('sl.lesson', 'lesson')
+        .innerJoin('lesson.module', 'module')
+        .where('sl.userId = :userId AND module.courseId = :courseId', { userId, courseId })
+        .getCount();
+
+      enrollment.progress = Math.round((completedLessons / totalLessons) * 100);
+    }
+
+    return this.enrollmentRepository.save(enrollment);
   }
 
   async updateProgress(

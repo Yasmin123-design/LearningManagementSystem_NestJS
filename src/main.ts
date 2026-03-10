@@ -14,18 +14,17 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,
-    //logger: ['error', 'warn'],
   });
   const configService = app.get(ConfigService);
 
   app.useStaticAssets(join(__dirname, '..', 'public'));
+  app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
-  
-  // If views not found in dist, fallback to project root (for dev)
+
   if (process.env.NODE_ENV !== 'production') {
     app.setBaseViewsDir(join(process.cwd(), 'views'));
   }
-  
+
   app.setViewEngine('ejs');
 
   app.use(helmet());
