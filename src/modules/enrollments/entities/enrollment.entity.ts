@@ -15,31 +15,31 @@ import { Course } from '../../courses/entities/course.entity';
 @Unique(['userId', 'courseId'])
 export class Enrollment {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  userId: string;
+  userId!: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
-  student: User;
+  student!: User;
 
   @Column()
-  courseId: string;
+  courseId!: string;
 
-  @ManyToOne(() => Course)
+  @ManyToOne(() => Course, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'courseId' })
-  course: Course;
+  course!: Course;
 
   @Column({ default: false })
-  isPaid: boolean;
+  isPaid!: boolean;
 
   @Column({ type: 'int', default: 0 })
-  progress: number;
+  progress!: number;
 
   @CreateDateColumn()
-  enrolledAt: Date;
+  enrolledAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

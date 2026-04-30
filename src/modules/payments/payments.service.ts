@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { EnrollmentsService } from '../enrollments/enrollments.service';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
 import { ConfigService } from '@nestjs/config';
+import { CoursesService } from '../courses/courses.service';
 import Stripe from 'stripe';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class PaymentsService {
   constructor(
     private readonly enrollmentsService: EnrollmentsService,
     private readonly configService: ConfigService,
+    private readonly coursesService: CoursesService,
   ) {
     this.stripe = new Stripe(
       this.configService.get('STRIPE_SECRET_KEY') || '',
@@ -22,13 +24,15 @@ export class PaymentsService {
   }
 
   async processPayment(userId: string, processPaymentDto: ProcessPaymentDto) {
-    const { courseId } = processPaymentDto;
-    const frontendUrl =
-      this.configService.get<string>('app.frontendUrl') ||
-      'http://localhost:3001';
+    const { courseId, successUrl } = processPaymentDto;
+
+    const course = await this.coursesService.findOne(courseId);
+    if (!course) {
+      throw new BadRequestException('Course not found');
+    }
 
     this.logger.log(
-      `Creating Checkout Session for user ${userId} and course ${courseId}`,
+      `Creating Checkout Session for user ${userId} and course ${courseId} with price ${course.price}`,
     );
 
     try {
@@ -39,16 +43,17 @@ export class PaymentsService {
             price_data: {
               currency: 'usd',
               product_data: {
-                name: `Course ID: ${courseId}`,
+                name: course.title,
+                description: `Course ID: ${courseId}`,
               },
-              unit_amount: 1000,
+              unit_amount: Math.round(Number(course.price) * 100),
             },
             quantity: 1,
           },
         ],
         mode: 'payment',
-        success_url: `${frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${frontendUrl}/payment/cancel`,
+        success_url: successUrl,
+        cancel_url: `${this.configService.get<string>('app.frontendUrl') || 'http://localhost:3001'}/payment/cancel`,
         metadata: {
           userId,
           courseId,
@@ -70,7 +75,9 @@ export class PaymentsService {
     );
     this.logger.log(`Webhook secret present: ${!!webhookSecret}`);
     if (webhookSecret) {
-      this.logger.log(`Webhook secret starts with: ${webhookSecret.substring(0, 7)}...`);
+      this.logger.log(
+        `Webhook secret starts with: ${webhookSecret.substring(0, 7)}...`,
+      );
     }
     this.logger.log(`Body type: ${typeof body}`);
     this.logger.log(`Is Buffer: ${Buffer.isBuffer(body)}`);

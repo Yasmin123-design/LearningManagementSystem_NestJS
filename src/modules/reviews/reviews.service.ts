@@ -125,11 +125,16 @@ export class ReviewsService {
 
   private async recalculateAverageRating(courseId: string): Promise<void> {
     const reviews = await this.reviewRepository.find({ where: { courseId } });
-    if (reviews.length === 0) return;
+    if (reviews.length === 0) {
+      await this.coursesService.updateCourseStats(courseId, 0, 0);
+      return;
+    }
 
     const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
     const average = parseFloat((sum / reviews.length).toFixed(1));
 
-    await this.coursesService.updateAverageRating(courseId, average);
+    // We still update averageRating as it's useful for sorting/filtering
+    // but the count is now handled live in CoursesService.
+    await this.coursesService.updateCourseStats(courseId, average, reviews.length);
   }
 }

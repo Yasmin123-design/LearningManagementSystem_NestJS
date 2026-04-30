@@ -17,4 +17,14 @@ export default registerAs('app', () => ({
     refreshExpiration: process.env.JWT_REFRESH_EXPIRATION || '7d',
   },
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3001',
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+  },
+  linkedin: {
+    clientId: process.env.LINKEDIN_CLIENT_ID,
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+    callbackUrl: process.env.LINKEDIN_CALLBACK_URL,
+  },
 }));

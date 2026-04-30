@@ -7,6 +7,8 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { AtStrategy } from './strategies/at.strategy';
 import { RtStrategy } from './strategies/rt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { LinkedInStrategy } from './strategies/linkedin.strategy';
 
 @Module({
   imports: [
@@ -16,6 +18,12 @@ import { RtStrategy } from './strategies/rt.strategy';
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, AtStrategy, RtStrategy],
+  providers: [
+    AuthService,
+    AtStrategy,
+    RtStrategy,
+    GoogleStrategy,
+    LinkedInStrategy,
+  ],
 })
 export class AuthModule {}

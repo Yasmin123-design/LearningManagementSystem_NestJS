@@ -25,6 +25,12 @@ export class InstructorController {
   getCourses(@CurrentUser('userId') userId: string) {
     return this.instructorService.getCourses(userId);
   }
+
+  @Get('enrollments')
+  @ApiOperation({ summary: 'Get all student enrollments for instructor courses' })
+  getEnrollments(@CurrentUser('userId') userId: string) {
+    return this.instructorService.getEnrollments(userId);
+  }
 }
 
 @ApiTags('instructors')

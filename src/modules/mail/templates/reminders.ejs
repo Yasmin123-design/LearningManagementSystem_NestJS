@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
+        .header { background-color: #4A90E2; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { padding: 20px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #4A90E2; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+        .footer { text-align: center; font-size: 12px; color: #777; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>We've Missed You! 🚀</h1>
+        </div>
+        <div class="content">
+            <p>Hi <%= userName %>,</p>
+            <p>We noticed that you enrolled in <strong><%= courseName %></strong> a few days ago, but you haven't started your first lesson yet.</p>
+            <p>Don't let your excitement fade! Every expert was once a beginner, and the best time to start is <strong>now</strong>.</p>
+            <p>Your learning journey is waiting for you. Click the button below to jump back in and start your first lesson!</p>
+            <center>
+                <a href="<%= frontendUrl %>/courses/<%= courseId %>" class="button">Start Learning Now</a>
+            </center>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, feel free to reply to this email.</p>
+            <p>&copy; 2026 LMS Platform. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

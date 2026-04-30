@@ -1,12 +1,15 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { RegisterDto } from '../auth/dto/register.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -37,6 +40,18 @@ export class UsersService {
     return this.userRepository.findOne({
       where: { email },
       select: ['id', 'email', 'password', 'role', 'isVerified'],
+    });
+  }
+
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { googleId },
+    });
+  }
+
+  async findByLinkedInId(linkedinId: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { linkedinId },
     });
   }
 
@@ -100,6 +115,36 @@ export class UsersService {
     await this.userRepository.update(userId, data);
   }
 
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'password'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      changePasswordDto.oldPassword,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
+      throw new BadRequestException('Incorrect old password');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      10,
+    );
+
+    await this.userRepository.update(userId, { password: hashedNewPassword });
+  }
+
   async clearResetPasswordToken(userId: string): Promise<void> {
     await this.userRepository.update(userId, {
       resetPasswordToken: null,
@@ -109,8 +154,18 @@ export class UsersService {
 
   async updateProfile(
     userId: string,
-    data: { name?: string; bio?: string; avatar?: string },
+    data: { name?: string; bio?: string; avatar?: string; email?: string },
   ): Promise<User> {
+    if (data.email) {
+      const existingUser = await this.userRepository.findOne({
+        where: { email: data.email },
+      });
+
+      if (existingUser && existingUser.id !== userId) {
+        throw new ConflictException('Email already exists');
+      }
+    }
+
     await this.userRepository.update(userId, data);
     return this.findById(userId);
   }
@@ -118,7 +173,16 @@ export class UsersService {
   async getMe(userId: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'email', 'role', 'name', 'bio', 'avatar', 'isVerified', 'createdAt'],
+      select: [
+        'id',
+        'email',
+        'role',
+        'name',
+        'bio',
+        'avatar',
+        'isVerified',
+        'createdAt',
+      ],
     });
     if (!user) throw new Error('User not found');
     return user;

@@ -50,6 +50,12 @@ export class User {
   @Column({ type: 'timestamp', nullable: true, select: false })
   resetPasswordExpires: Date | null;
 
+  @Column({ type: 'varchar', nullable: true, select: false })
+  googleId: string | null;
+
+  @Column({ type: 'varchar', nullable: true, select: false })
+  linkedinId: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

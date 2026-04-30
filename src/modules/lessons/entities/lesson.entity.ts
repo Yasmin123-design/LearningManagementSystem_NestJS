@@ -28,7 +28,7 @@ export class Lesson {
   content: string;
 
   @Column({ nullable: true })
-  Url: string;
+  videoUrl: string;
 
   @Column({
     type: 'enum',
@@ -37,13 +37,16 @@ export class Lesson {
   })
   type: LessonType;
 
+  @Column({ default: 0 })
+  duration: number; // in minutes
+
   @Column({ type: 'int', default: 0 })
   order: number;
 
   @Column()
   moduleId: string;
 
-  @ManyToOne(() => CourseModule, (module) => module.lessons)
+  @ManyToOne(() => CourseModule, (module) => module.lessons, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'moduleId' })
   module: CourseModule;
 

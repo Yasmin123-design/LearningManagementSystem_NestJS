@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { ConfigService } from '@nestjs/config';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -22,6 +23,10 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UsersService } from '../users/users.service';
 import { Throttle } from '@nestjs/throttler';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { LinkedInAuthGuard } from './guards/linkedin-auth.guard';
+import type { Request, Response } from 'express';
+import { Req, Res } from '@nestjs/common';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -29,6 +34,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Public()
@@ -73,23 +79,28 @@ export class AuthController {
 
   @Public()
   @Get('verify')
-  @Render('verify-result')
   @ApiOperation({ summary: 'Verify user email' })
-  async verify(@Query('token') token: string) {
+  async verify(@Query('token') token: string, @Res() res: Response) {
+    const frontendUrl = this.configService.get<string>('app.frontendUrl');
     try {
       await this.usersService.verifyEmailByToken(token);
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.message };
+      return res.redirect(`${frontendUrl}/verify-status?success=true`);
+    } catch (error: any) {
+      return res.redirect(
+        `${frontendUrl}/verify-status?success=false&message=${encodeURIComponent(error.message)}`,
+      );
     }
   }
 
   @Public()
   @Get('reset-password')
-  @Render('reset-password-form')
-  @ApiOperation({ summary: 'Show reset password form' })
-  async showResetPasswordForm(@Query('token') token: string) {
-    return { token };
+  @ApiOperation({ summary: 'Show reset password form (Redirects to Frontend)' })
+  async showResetPasswordForm(
+    @Query('token') token: string,
+    @Res() res: Response,
+  ) {
+    const frontendUrl = this.configService.get<string>('app.frontendUrl');
+    return res.redirect(`${frontendUrl}/reset-password?token=${token}`);
   }
 
   @Public()
@@ -102,14 +113,53 @@ export class AuthController {
 
   @Public()
   @Post('reset-password')
-  @Render('reset-password-result')
   @ApiOperation({ summary: 'Reset password using token' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     try {
       await this.authService.resetPassword(resetPasswordDto);
-      return { success: true };
-    } catch (error) {
-      return { success: false, message: error.message };
+      return { success: true, message: 'Password reset successful' };
+    } catch (error: any) {
+      throw error; 
     }
+  }
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google')
+  @ApiOperation({ summary: 'Login with Google' })
+  async googleAuth(@Req() req) {}
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  @ApiOperation({ summary: 'Google auth callback' })
+  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+    const tokens = await this.authService.validateOAuthUser(req.user, 'google');
+    console.log(tokens);
+    const frontendUrl = this.configService.get<string>('app.frontendUrl');
+    return res.redirect(
+      `${frontendUrl}/auth-success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+    );
+  }
+
+  @Public()
+  @UseGuards(LinkedInAuthGuard)
+  @Get('linkedin')
+  @ApiOperation({ summary: 'Login with LinkedIn' })
+  async linkedinAuth(@Req() req) {}
+
+  @Public()
+  @UseGuards(LinkedInAuthGuard)
+  @Get('linkedin/callback')
+  @ApiOperation({ summary: 'LinkedIn auth callback' })
+  async linkedinAuthRedirect(@Req() req: Request, @Res() res: Response) {
+    const tokens = await this.authService.validateOAuthUser(
+      req.user,
+      'linkedin',
+    );
+    const frontendUrl = this.configService.get<string>('app.frontendUrl');
+    return res.redirect(
+      `${frontendUrl}/auth-success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+    );
   }
 }

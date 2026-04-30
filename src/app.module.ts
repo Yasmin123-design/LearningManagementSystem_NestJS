@@ -20,9 +20,13 @@ import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { InstructorModule } from './modules/instructor/instructor.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { CertificatesModule } from './modules/certificates/certificates.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
+    NotificationsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],

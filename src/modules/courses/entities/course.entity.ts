@@ -16,52 +16,57 @@ import { Module as CourseModule } from '../../modules/entities/module.entity';
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column({ type: 'text' })
-  description: string;
+  description!: string;
 
   @Column({ nullable: true })
-  thumbnail: string;
+  thumbnail!: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  price: number;
+  price!: number;
 
   @Column({ default: false })
-  isPremium: boolean;
+  isPremium!: boolean;
 
   @Column({ default: false })
-  isPublished: boolean;
+  isPublished!: boolean;
 
   @Column({ type: 'decimal', precision: 2, scale: 1, default: 0 })
-  averageRating: number;
+  averageRating!: number;
 
   @Column()
-  instructorId: string;
+  instructorId!: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'instructorId' })
-  instructor: User;
+  instructor!: User;
 
   @Column()
-  categoryId: string;
+  categoryId!: string;
 
   @ManyToOne(() => Category, (category) => category.courses)
   @JoinColumn({ name: 'categoryId' })
-  category: Category;
+  category!: Category;
+
+  @Column({ default: 0 })
+  reviewsCount!: number;
+
+  progress?: number;
 
   @OneToMany(() => CourseModule, (module) => module.course)
-  modules: CourseModule[];
+  modules!: CourseModule[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn()
-  deletedAt: Date;
+  deletedAt!: Date;
 }

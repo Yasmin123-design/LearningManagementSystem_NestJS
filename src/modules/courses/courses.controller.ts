@@ -24,6 +24,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { UseInterceptors } from '@nestjs/common';
+import { OptionalAtGuard } from '../auth/guards/optional-at.guard';
 
 @ApiTags('Courses')
 @Controller('courses')
@@ -45,22 +46,54 @@ export class CoursesController {
 
   @Public()
   @UseInterceptors(CacheInterceptor)
+  @UseGuards(OptionalAtGuard)
   @Get()
   @ApiOperation({ summary: 'Get all courses (Paginated, Filtered)' })
-  findAll(@Query() query: GetCourseQueryDto) {
-    return this.coursesService.findAll(query);
+  findAll(
+    @Query() query: GetCourseQueryDto,
+    @CurrentUser('userId') userId?: string,
+  ) {
+    return this.coursesService.findAll(query, userId);
   }
 
+  @Get('instructor/me')
+  @Roles(Role.INSTRUCTOR, Role.ADMIN)
+  @UseGuards(AtGuard, RolesGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current instructor courses' })
+  getMyCourses(
+    @CurrentUser('userId') userId: string,
+    @Query() query: GetCourseQueryDto,
+  ) {
+    return this.coursesService.getByInstructor(userId, query);
+  }
   @Public()
+  @UseInterceptors(CacheInterceptor)
+  @UseGuards(OptionalAtGuard)
+  @Get('findAllPublishedAndUnPublished')
+  @ApiOperation({ summary: 'Get all courses (Paginated, Filtered)' })
+  findAllPublishedAndUnPublished(
+    @Query() query: GetCourseQueryDto,
+    @CurrentUser('userId') userId?: string,
+  ) {
+    return this.coursesService.findAllPublishedAndUnPublished(query, userId);
+  }
+  @Public()
+  @UseGuards(OptionalAtGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Get course by ID' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.coursesService.findOne(id);
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser('userId') userId?: string,
+  ) {
+    return this.coursesService.findOne(id, userId);
   }
 
   @Public()
   @Get(':id/content')
-  @ApiOperation({ summary: 'Get course content (Modules and Lessons) hierarchy' })
+  @ApiOperation({
+    summary: 'Get course content (Modules and Lessons) hierarchy',
+  })
   getContent(@Param('id', ParseUUIDPipe) id: string) {
     return this.coursesService.getContentHierarchy(id);
   }

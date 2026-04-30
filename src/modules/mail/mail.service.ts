@@ -31,9 +31,7 @@ export class MailService {
       });
       return true;
     } catch (error) {
-      this.logger.error(
-        `Error sending verification email to ${email}: ${error.stack}`,
-      );
+      this.logger.error(`Error sending verification email `);
       return false;
     }
   }
@@ -52,9 +50,32 @@ export class MailService {
       });
       return true;
     } catch (error) {
-      this.logger.error(
-        `Error sending password reset email to ${email}: ${error.message}`,
-      );
+      this.logger.error(`Error sending password reset email `);
+      return false;
+    }
+  }
+
+  async sendReminderEmail(
+    email: string,
+    userName: string,
+    courseName: string,
+    courseId: string,
+  ) {
+    try {
+      await this.mailerService.sendMail({
+        to: email,
+        subject: `Missed you! Start your journey in ${courseName}`,
+        template: './reminders',
+        context: {
+          userName,
+          courseName,
+          courseId,
+          frontendUrl: this.frontendUrl,
+        },
+      });
+      return true;
+    } catch (error) {
+      this.logger.error(`Error sending reminder email to ${email}`);
       return false;
     }
   }

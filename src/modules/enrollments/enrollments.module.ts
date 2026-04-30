@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EnrollmentsService } from './enrollments.service';
+import { RemindersService } from './reminders.service';
 import { EnrollmentsController } from './enrollments.controller';
 import { Enrollment } from './entities/enrollment.entity';
 import { StudentLesson } from './entities/student-lesson.entity';
@@ -15,7 +16,7 @@ import { Lesson } from '../lessons/entities/lesson.entity';
     forwardRef(() => QuizzesModule),
   ],
   controllers: [EnrollmentsController],
-  providers: [EnrollmentsService],
+  providers: [EnrollmentsService, RemindersService],
   exports: [EnrollmentsService],
 })
 export class EnrollmentsModule {}

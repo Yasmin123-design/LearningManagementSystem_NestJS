@@ -17,6 +17,7 @@ import { UsersService } from './users.service';
 import { AtGuard } from '../auth/guards/at.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -39,7 +40,7 @@ export class UsersController {
   }
 
   @Patch('me')
-  @ApiOperation({ summary: 'Update profile info (name, bio)' })
+  @ApiOperation({ summary: 'Update profile info (name, bio, email)' })
   updateProfile(
     @CurrentUser('userId') userId: string,
     @Body() updateProfileDto: UpdateProfileDto,
@@ -82,5 +83,13 @@ export class UsersController {
   ) {
     const avatarUrl = `/uploads/avatars/${file.filename}`;
     return this.usersService.updateProfile(userId, { avatar: avatarUrl });
+  }
+  @Patch('me/change-password')
+  @ApiOperation({ summary: 'Change user password' })
+  changePassword(
+    @CurrentUser('userId') userId: string,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.usersService.changePassword(userId, changePasswordDto);
   }
 }

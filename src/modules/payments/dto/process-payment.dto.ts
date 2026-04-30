@@ -6,4 +6,9 @@ export class ProcessPaymentDto {
   @IsUUID()
   @IsNotEmpty()
   courseId: string;
+
+  @ApiProperty({ example: 'http://localhost:3000/success' })
+  @IsString()
+  @IsNotEmpty()
+  successUrl: string;
 }

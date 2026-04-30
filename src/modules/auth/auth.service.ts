@@ -120,7 +120,7 @@ export class AuthService {
   async refreshTokens(userId: string, refreshToken: string) {
     console.log(`[Refresh] Attempting refresh for userId: ${userId}`);
     const user = await this.usersService.findById(userId);
-    
+
     if (!user) {
       console.log(`[Refresh] User not found: ${userId}`);
       throw new UnauthorizedException('Access Denied');
@@ -131,16 +131,66 @@ export class AuthService {
       throw new UnauthorizedException('Access Denied');
     }
 
-    console.log(`[Refresh] Provided token (start): ${refreshToken.substring(0, 10)}...`);
-    
+    console.log(
+      `[Refresh] Provided token (start): ${refreshToken.substring(0, 10)}...`,
+    );
+
     const refreshTokenMatches = await bcrypt.compare(
       refreshToken,
       user.refreshToken,
     );
-    
+
     if (!refreshTokenMatches) {
       console.log(`[Refresh] Token mismatch for user: ${userId}`);
       throw new UnauthorizedException('Access Denied');
+    }
+
+    const tokens = await this.getTokens(user.id, user.email, user.role);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
+  }
+
+  async validateOAuthUser(profile: any, provider: 'google' | 'linkedin') {
+    // console.log(`Profile from ${provider}:`, JSON.stringify(profile, null, 2));
+    
+    let email: string;
+    let displayName: string;
+    let avatar: string | undefined = undefined;
+    let id: string = profile.id;
+
+    if (provider === 'google') {
+      email = profile.emails?.[0]?.value;
+      displayName = profile.displayName || (profile.name?.givenName + ' ' + profile.name?.familyName);
+      avatar = profile.photos?.[0]?.value || undefined;
+    } else {
+      // LinkedIn OpenID Connect Structure
+      email = profile.email || profile.emails?.[0]?.value;
+      displayName = profile.displayName || profile.name || (profile.givenName + ' ' + profile.familyName);
+      avatar = profile.picture || profile.photos?.[0]?.value || undefined;
+    }
+
+    if (!email) {
+      throw new BadRequestException(`Email not found in ${provider} profile`);
+    }
+
+    let user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      user = await this.usersService.create({
+        email,
+        password: uuidv4(), 
+        name: displayName,
+      } as any);
+
+      await this.usersService.updateProfile(user.id, { avatar });
+      await this.usersService.verifyEmailByToken(user.verificationToken || '');
+    }
+
+    if (provider === 'google' && !user.googleId) {
+      await this.usersService.updateProfile(user.id, { googleId: id } as any);
+    } else if (provider === 'linkedin' && !user.linkedinId) {
+      await this.usersService.updateProfile(user.id, { linkedinId: id } as any);
     }
 
     const tokens = await this.getTokens(user.id, user.email, user.role);

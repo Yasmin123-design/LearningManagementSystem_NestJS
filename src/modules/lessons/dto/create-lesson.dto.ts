@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsString, IsOptional, IsInt, IsUUID, IsEnum, IsUrl } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsInt,
+  IsUUID,
+  IsEnum,
+  IsUrl,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { LessonType } from '../entities/lesson.entity';
 

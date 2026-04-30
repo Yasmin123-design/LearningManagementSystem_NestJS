@@ -13,12 +13,14 @@ export class CreateCourseDto {
   @ApiProperty({ example: 'Complete NestJS Bootcamp' })
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title!: string;
 
-  @ApiProperty({ example: 'Learn NestJS from scratch with this comprehensive course.' })
+  @ApiProperty({
+    example: 'Learn NestJS from scratch with this comprehensive course.',
+  })
   @IsString()
   @IsNotEmpty()
-  description: string;
+  description!: string;
 
   @ApiProperty({ example: '99.99', required: false })
   @IsNumber()
@@ -34,10 +36,19 @@ export class CreateCourseDto {
   @ApiProperty({ example: 'uuid-of-category' })
   @IsUUID()
   @IsNotEmpty()
-  categoryId: string;
+  categoryId!: string;
 
-  @ApiProperty({ example: 'https://example.com/thumbnail.jpg', required: false })
+  @ApiProperty({
+    example: 'https://example.com/thumbnail.jpg',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   thumbnail?: string;
+
+  @ApiProperty({ example: 10.5, required: false })
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  durationHours?: number;
 }

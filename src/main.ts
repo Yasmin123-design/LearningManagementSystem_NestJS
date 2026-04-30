@@ -19,13 +19,6 @@ async function bootstrap() {
 
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
-  app.setBaseViewsDir(join(__dirname, '..', 'views'));
-
-  if (process.env.NODE_ENV !== 'production') {
-    app.setBaseViewsDir(join(process.cwd(), 'views'));
-  }
-
-  app.setViewEngine('ejs');
 
   app.use(helmet());
   app.enableCors();
